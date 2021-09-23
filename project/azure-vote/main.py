@@ -90,15 +90,11 @@ else:
     title = app.config["TITLE"]
 
 # Redis Connection to a local server running on the same machine where the current FLask app is running.
-r = redis.Redis()
+# r = redis.Redis()
 
-"""
-# The commented section below is used while deploying the application with two separate containers -
-# One container for Redis and another for the frontend.
-
-# Redis configurations
 redis_server = os.environ['REDIS']
 
+# Redis Connection to another container
 try:
     if "REDIS_PWD" in os.environ:
         r = redis.StrictRedis(host=redis_server,
@@ -109,7 +105,7 @@ try:
     r.ping()
 except redis.ConnectionError:
     exit('Failed to connect to Redis, terminating.')
-"""
+
 
 if app.config["SHOWHOST"] == "true":
     title = socket.gethostname()
@@ -177,12 +173,12 @@ def index():
             vote1 = r.get(button1).decode("utf-8")
             properties = {"custom_dimensions": {"Cats Vote": vote1}}
 
-            logger.info("Cats Vote", extra=properties)
+            logger.info("Cats Vote on VMSS", extra=properties)
 
             vote2 = r.get(button2).decode("utf-8")
             properties = {"custom_dimensions": {"Dogs Vote": vote2}}
 
-            logger.info("Dogs Vote", extra=properties)
+            logger.info("Dogs Vote on VMSS", extra=properties)
 
             return render_template(
                 "index.html",
@@ -195,7 +191,4 @@ def index():
 
 
 if __name__ == "__main__":
-    # comment line below when deploying to VMSS
-    app.run() # local
-    # uncomment the line below before deployment to VMSS
-    # app.run(host='0.0.0.0', threaded=True, debug=True) # remote
+    app.run(host="0.0.0.0", port=80, debug=True)
